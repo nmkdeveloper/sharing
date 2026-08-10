@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codeforces Graph + Data Structures Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900 custom-scrollbar">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 rounded-md text-white">
+                    <i data-lucide="network" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-slate-900">
+                        Codeforces Graph + DS Hub
+                    </h1>
+                    <p class="text-xs text-slate-500">Nghiên cứu & Luyện tập Graph + Data Structures Cơ bản</p>
+                </div>
+            </div>
+
+            <!-- Stats & Reset Button -->
+            <div class="flex items-center gap-3 text-xs">
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                    <span class="text-slate-500">Tiến độ:</span>
+                    <span id="solved-count" class="font-bold text-slate-900">0</span>
+                    <span class="text-slate-400">/ 30</span>
+                </div>
+                <button onclick="resetProgress()" class="px-3 py-1.5 rounded-md bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition text-xs flex items-center gap-1.5" title="Đặt lại tiến độ">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 flex flex-col gap-5">
+
+        <!-- Nav Tabs -->
+        <div class="flex items-center justify-start gap-2 border-b border-slate-200 pb-2 overflow-x-auto custom-scrollbar">
+            <button onclick="switchTab('all')" id="tab-btn-all" class="tab-btn px-3.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 bg-blue-600 text-white border border-blue-600">
+                <i data-lucide="list" class="w-4 h-4"></i>
+                Tất cả 30 Bài toán
+            </button>
+            <button onclick="switchTab('groups')" id="tab-btn-groups" class="tab-btn px-3.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300">
+                <i data-lucide="folder-tree" class="w-4 h-4"></i>
+                7 Nhóm Phân loại
+            </button>
+            <button onclick="switchTab('path')" id="tab-btn-path" class="tab-btn px-3.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300">
+                <i data-lucide="route" class="w-4 h-4"></i>
+                Lộ trình Học tập (5 Levels)
+            </button>
+            <button onclick="switchTab('patterns')" id="tab-btn-patterns" class="tab-btn px-3.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300">
+                <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                10 Pattern Thực tế
+            </button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div id="filter-section" class="bg-white p-3.5 rounded-lg border border-slate-200 flex flex-wrap gap-3 items-center justify-between">
+            <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+                <div class="relative flex-1 min-w-[200px]">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="Tìm tên bài, ID (vd: 520B), từ khóa..." class="w-full bg-slate-50 border border-slate-300 rounded-md pl-9 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition">
+                </div>
+
+                <select id="filter-ds" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white">
+                    <option value="">-- Tất cả Data Structure --</option>
+                    <option value="queue">Queue</option>
+                    <option value="set">Set / Unordered Set</option>
+                    <option value="map">Map / Unordered Map</option>
+                    <option value="stack">Stack</option>
+                    <option value="priority_queue">Priority Queue</option>
+                    <option value="vector">Vector / Array</option>
+                </select>
+
+                <select id="filter-rating" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white">
+                    <option value="">-- Tất cả Rating --</option>
+                    <option value="800-1000">800 - 1000 (Cơ bản)</option>
+                    <option value="1100-1200">1100 - 1200 (Dễ)</option>
+                    <option value="1300-1400">1300 - 1400 (Trung bình)</option>
+                    <option value="1500-1600">1500 - 1600 (Khá / Challenge)</option>
+                </select>
+
+                <select id="filter-status" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white">
+                    <option value="all">Tất cả Trạng thái</option>
+                    <option value="todo">Chưa giải</option>
+                    <option value="solved">Đã hoàn thành</option>
+                </select>
+            </div>
+
+            <div id="results-count" class="text-xs font-medium text-slate-500">
+                Hiển thị 30 / 30 bài
+            </div>
+        </div>
+
+        <!-- VIEW 1: ALL PROBLEMS TABLE -->
+        <div id="view-all" class="view-content flex flex-col gap-4">
+            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
+                                <th class="py-2.5 px-3 w-10 text-center">#</th>
+                                <th class="py-2.5 px-3 w-10 text-center">Done</th>
+                                <th class="py-2.5 px-4">Bài toán / CF ID</th>
+                                <th class="py-2.5 px-3">Rating</th>
+                                <th class="py-2.5 px-4">Dạng Graph</th>
+                                <th class="py-2.5 px-4">Data Structure</th>
+                                <th class="py-2.5 px-4">Mục đích chính của DS</th>
+                                <th class="py-2.5 px-3 text-center">Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="problems-tbody" class="divide-y divide-slate-200 text-xs">
+                            <!-- Dynamic Content Inserted by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: 7 GROUPS VIEW -->
+        <div id="view-groups" class="view-content hidden flex flex-col gap-5">
+            <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Group cards generated dynamically -->
+            </div>
+        </div>
+
+        <!-- VIEW 3: LEARNING PATH (5 LEVELS) -->
+        <div id="view-path" class="view-content hidden flex flex-col gap-5">
+            <div id="path-container" class="space-y-4">
+                <!-- Learning Path Levels generated dynamically -->
+            </div>
+        </div>
+
+        <!-- VIEW 4: 10 PATTERNS VIEW -->
+        <div id="view-patterns" class="view-content hidden flex flex-col gap-5">
+            <div id="patterns-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Pattern cards generated dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <div id="problem-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-none hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-300 rounded-lg max-w-2xl w-full p-5 shadow-lg relative flex flex-col gap-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal()" class="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-slate-700 rounded-md hover:bg-slate-100 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-start gap-3">
+                <span id="modal-rating-badge" class="px-2 py-0.5 rounded text-xs font-bold border">
+                    1000
+                </span>
+                <div>
+                    <h2 id="modal-title" class="text-base font-bold text-slate-900">
+                        Title
+                    </h2>
+                    <p id="modal-cfid" class="text-xs font-mono text-slate-500">CF 520B</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs my-0.5">
+                <div class="p-3 bg-slate-50 rounded-md border border-slate-200">
+                    <span class="text-slate-500 block mb-0.5 font-medium">Thuật toán Graph:</span>
+                    <span id="modal-graph" class="text-slate-900 font-bold text-xs">BFS</span>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-md border border-slate-200">
+                    <span class="text-slate-500 block mb-0.5 font-medium">Data Structure Trọng tâm:</span>
+                    <span id="modal-ds" class="text-blue-700 font-semibold font-mono text-xs">queue&lt;int&gt;</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-1.5">
+                    <i data-lucide="target" class="w-3.5 h-3.5 text-blue-600"></i> Mục đích của Data Structure:
+                </h4>
+                <p id="modal-purpose" class="text-xs text-slate-800 bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                    -
+                </p>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-1.5">
+                    <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-purple-600"></i> Ý tưởng chính giải bài toán:
+                </h4>
+                <p id="modal-idea" class="text-xs text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                    -
+                </p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-200 flex items-center justify-between gap-4">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 hover:text-slate-900">
+                    <input type="checkbox" id="modal-checkbox" onchange="toggleSolvedFromModal()" class="w-4 h-4 rounded text-blue-600 border-slate-300">
+                    <span>Đã hoàn thành bài này</span>
+                </label>
+
+                <a id="modal-link" href="#" target="_blank" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                    Mở bài gốc trên Codeforces
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROBLEMS = [
+            {
+                stt: 1, id: "1057A", title: "Bmail Computer Network", rating: 800,
+                graph: "Tree / Parent Traversal", ds: "vector<int> / stack",
+                dsPurpose: "Lưu vết đường đi ngược từ nút lá về nút gốc của cây.",
+                idea: "Tiến hành lần ngược mảng cha từ đỉnh n về đỉnh 1, đẩy các đỉnh vào vector hoặc stack rồi xuất thứ tự ngược lại để thu được hành trình.",
+                link: "https://codeforces.com/problemset/problem/1057/A", group: 6, level: 1
+            },
+            {
+                stt: 2, id: "520B", title: "Two Buttons", rating: 1000,
+                graph: "BFS / Implicit State Graph", ds: "queue<int>, vector<int>",
+                dsPurpose: "Quản lý hàng đợi các trạng thái giá trị số và khoảng cách bước đi ngắn nhất.",
+                idea: "Biểu diễn các giá trị số dưới dạng đỉnh đồ thị với 2 cung chuyển trạng thái (2n và n-1). Sử dụng queue chạy BFS từ n đến m để tìm số thao tác tối thiểu.",
+                link: "https://codeforces.com/problemset/problem/520/B", group: 1, level: 1
+            },
+            {
+                stt: 3, id: "1020B", title: "Badge", rating: 1000,
+                graph: "DFS / Functional Graph", ds: "vector<bool> / unordered_set",
+                dsPurpose: "Theo dõi tập hợp các đỉnh đã ghé thăm trong hành trình duyệt hiện tại.",
+                idea: "Khởi chạy DFS từ từng học sinh i, lưu các đỉnh đã đi qua vào tập theo dõi. Ngay khi gặp lại một đỉnh đã tồn tại trong tập, đỉnh đó là nút đầu tiên của chu trình.",
+                link: "https://codeforces.com/problemset/problem/1020/B", group: 2, level: 1
+            },
+            {
+                stt: 4, id: "1249B1", title: "Books Exchange (easy version)", rating: 1000,
+                graph: "DFS / Permutation Cycle", ds: "vector<int>",
+                dsPurpose: "Thu thập danh sách các đỉnh thuộc cùng một chu trình hoán vị.",
+                idea: "Duyệt qua chu trình hoán vị bằng DFS, lưu tất cả các phần tử vào vector. Kích thước của vector chính là số ngày cần thiết cho mọi đỉnh thuộc chu trình đó.",
+                link: "https://codeforces.com/problemset/problem/1249/B1", group: 3, level: 1
+            },
+            {
+                stt: 5, id: "1829D", title: "Gold Rush", rating: 1000,
+                graph: "DFS/BFS State Tree", ds: "unordered_set<int>, queue<int>",
+                dsPurpose: "Lưu trữ các kích thước đống vàng đã xét để tránh duyệt lặp (memoization).",
+                idea: "Từ đống n, nếu n % 3 == 0 thì phân nhánh thành n/3 và 2n/3. Dùng unordered_set để đánh dấu các giá trị đã kiểm tra, dừng lại ngay khi xuất hiện m.",
+                link: "https://codeforces.com/problemset/problem/1829/D", group: 2, level: 1
+            },
+            {
+                stt: 6, id: "1950D", title: "Product of Binary Decimals", rating: 1100,
+                graph: "BFS / Implicit State Graph", ds: "queue<int>, unordered_set<int>",
+                dsPurpose: "Quản lý danh sách các số nhị phân thập phân sinh ra theo thứ tự tăng dần.",
+                idea: "Sinh tập hợp các số chỉ gồm chữ số 0 và 1 bằng BFS thông qua queue. Dùng các số này làm ước số thử nghiệm để giảm n về 1.",
+                link: "https://codeforces.com/problemset/problem/1950/D", group: 1, level: 2
+            },
+            {
+                stt: 7, id: "1829E", title: "The Lakes", rating: 1100,
+                graph: "Grid BFS / DFS", ds: "queue<pair<int,int>>",
+                dsPurpose: "Quản lý hàng đợi tọa độ ô vuông (r, c) trong quá trình loang đồ thị lưới.",
+                idea: "Tìm các ô có độ sâu >0, chạy BFS bằng queue để tổng hợp thể tích nước của tất cả các ô thuộc cùng một thành phần liên thông.",
+                link: "https://codeforces.com/problemset/problem/1829/E", group: 1, level: 2
+            },
+            {
+                stt: 8, id: "1363C", title: "Game On Leaves", rating: 1200,
+                graph: "Tree / Degree Tracking", ds: "vector<int>",
+                dsPurpose: "Quản lý bậc (degree) hiện tại của từng đỉnh trên cây.",
+                idea: "Bậc của đỉnh x quyết định chiến thuật. Nếu bậc của x <= 1, người chơi đầu tiên thắng ngay lập tức; ngược lại tính chẵn lẻ của tổng số đỉnh n sẽ quyết định kết quả.",
+                link: "https://codeforces.com/problemset/problem/1363/C", group: 6, level: 2
+            },
+            {
+                stt: 9, id: "1843D", title: "Apple Tree", rating: 1200,
+                graph: "Tree DFS", ds: "vector<long long>",
+                dsPurpose: "Lưu số lượng đỉnh lá thuộc cây con gốc u.",
+                idea: "Duyệt DFS hậu thứ tự (post-order) trên cây để tính số lá leaf[u]. Đáp án cho mỗi truy vấn (u, v) là tích leaf[u] * leaf[v].",
+                link: "https://codeforces.com/problemset/problem/1843/D", group: 6, level: 2
+            },
+            {
+                stt: 10, id: "1675D", title: "Vertical Paths", rating: 1200,
+                graph: "Tree DFS", ds: "vector<vector<int>>, vector<int>",
+                dsPurpose: "Lưu danh sách các đường đi dọc và các đỉnh thuộc đường đi hiện tại.",
+                idea: "Duyệt DFS từ gốc, ưu tiên kéo dài đường đi hiện tại qua con đầu tiên. Các con còn lại sẽ khởi tạo một đường đi độc lập mới trong mảng kết quả.",
+                link: "https://codeforces.com/problemset/problem/1675/D", group: 6, level: 2
+            },
+            {
+                stt: 11, id: "893C", title: "Rumor", rating: 1300,
+                graph: "Connected Components / DFS", ds: "vector<int>",
+                dsPurpose: "Tập hợp các đỉnh cùng thành phần liên thông để xác định min chi phí.",
+                idea: "Sử dụng DFS để phân rã đồ thị thành các thành phần liên thông độc lập. Với mỗi thành phần, tìm cá nhân có chi phí đút lót nhỏ nhất và cộng dồn vào đáp án.",
+                link: "https://codeforces.com/problemset/problem/893/C", group: 3, level: 3
+            },
+            {
+                stt: 12, id: "791B", title: "Bear and Friendship Condition", rating: 1300,
+                graph: "Connected Components / DFS", ds: "vector<int>",
+                dsPurpose: "Thu thập danh sách đỉnh để tính tổng bậc trong từng thành phần liên thông.",
+                idea: "Sử dụng DFS gom toàn bộ đỉnh thuộc cùng thành phần. Kiểm tra xem tổng số cạnh thực tế E có đúng bằng K(K-1)/2 với K là số đỉnh hay không.",
+                link: "https://codeforces.com/problemset/problem/791/B", group: 3, level: 3
+            },
+            {
+                stt: 13, id: "1741D", title: "Masha and a Beautiful Tree", rating: 1300,
+                graph: "Tree / Divide & Conquer DFS", ds: "pair<int, int>",
+                dsPurpose: "Trả về giá trị nhỏ nhất và lớn nhất của cây con trong quá trình đệ quy.",
+                idea: "DFS chia đôi cây, lấy pair min-max của hai cây con. Nếu khoảng giá trị của cây con trái lớn hơn cây con phải thì thực hiện hoán đổi và tăng biến đếm thao tác.",
+                link: "https://codeforces.com/problemset/problem/1741/D", group: 6, level: 3
+            },
+            {
+                stt: 14, id: "1638C", title: "Inversion Graph", rating: 1300,
+                graph: "Graph / Component Merge", ds: "stack<int>",
+                dsPurpose: "Duy trì giá trị lớn nhất của các thành phần liên thông hiện có.",
+                idea: "Duyệt hoán vị, nếu gặp a[i] lớn hơn đỉnh stack, đẩy a[i] vào. Nếu nhỏ hơn, thực hiện gộp các thành phần liên thông trên stack vi phạm điều kiện nghịch thế.",
+                link: "https://codeforces.com/problemset/problem/1638/C", group: 4, level: 3
+            },
+            {
+                stt: 15, id: "1365D", title: "Solve The Maze", rating: 1400,
+                graph: "Grid BFS", ds: "queue<pair<int,int>>",
+                dsPurpose: "Quản lý hàng đợi loang BFS từ lối thoát (n,m) trên lưới 2D.",
+                idea: "Đặt tường '#' xung quanh tất cả người xấu 'B'. Chạy BFS từ lối thoát (n,m) để kiểm tra xem có thể tiếp cận toàn bộ người tốt 'G' mà không đi qua 'B' nào hay không.",
+                link: "https://codeforces.com/problemset/problem/1365/D", group: 1, level: 3
+            },
+            {
+                stt: 16, id: "1593E", title: "Gardener and Tree", rating: 1400,
+                graph: "Tree / Multi-source BFS", ds: "queue<int>, vector<int>",
+                dsPurpose: "Quản lý hàng đợi các nút lá (bậc <= 1) để bóc tách theo từng lớp.",
+                idea: "Khởi tạo queue chứa toàn bộ các lá của cây. Thực hiện bóc lá đồng thời theo cơ chế thuật toán Kahn qua k bước BFS, cập nhật bậc của các đỉnh kề.",
+                link: "https://codeforces.com/problemset/problem/1593/E", group: 1, level: 3
+            },
+            {
+                stt: 17, id: "1611D", title: "Weights Assignment For Tree Edges", rating: 1400,
+                graph: "Tree Traversal", ds: "vector<int>",
+                dsPurpose: "Ánh xạ thứ tự xuất hiện của đỉnh trong mảng p và khoảng cách tới gốc.",
+                idea: "Duyệt qua mảng hoán vị p, gán khoảng cách tăng dần dist[p[i]] = i. Trọng số cạnh tới cha được tính bằng dist[p[i]] - dist[parent[p[i]]]; nếu <0 thì vô nghiệm.",
+                link: "https://codeforces.com/problemset/problem/1611/D", group: 6, level: 4
+            },
+            {
+                stt: 18, id: "1006E", title: "Military Problem", rating: 1400,
+                graph: "Tree DFS Traversal", ds: "vector<int>",
+                dsPurpose: "Lưu thứ tự duyệt DFS tiền thứ tự (preorder) để phẳng hóa cây thành mảng 1D.",
+                idea: "Thực hiện DFS preorder chuyển cấu trúc cây thành mảng tuyến tính. Mỗi cây con gốc u tương ứng với một đoạn liên tiếp. Truy vấn thứ k lấy trực tiếp từ mảng trong O(1).",
+                link: "https://codeforces.com/problemset/problem/1006/E", group: 6, level: 4
+            },
+            {
+                stt: 19, id: "1176E", title: "Cover it!", rating: 1400,
+                graph: "BFS 2-Coloring", ds: "queue<int>, vector<int>",
+                dsPurpose: "Duyệt phân tầng BFS để tô màu 2 phía (bipartite coloring).",
+                idea: "Khởi chạy BFS từ đỉnh 1, chia đồ thị thành 2 tập đỉnh dựa trên tính chẵn/lẻ của khoảng cách. Chọn tập đỉnh có kích thước nhỏ hơn (<= floor(n/2)) làm tập phủ.",
+                link: "https://codeforces.com/problemset/problem/1176/E", group: 1, level: 4
+            },
+            {
+                stt: 20, id: "1106D", title: "Lunar New Year and a Wander", rating: 1500,
+                graph: "Greedy Graph Traversal", ds: "priority_queue<int, greater<int>>",
+                dsPurpose: "Luôn chọn đỉnh chưa thăm có giá trị nhỏ nhất có thể di chuyển tới tiếp theo.",
+                idea: "Thay thế queue chuẩn bằng Min-Priority Queue trong BFS. Khởi đầu từ đỉnh 1, liên tục lấy đỉnh nhỏ nhất ra và đẩy các đỉnh kề chưa thăm vào Min-PQ để thu dãy từ vựng tối ưu.",
+                link: "https://codeforces.com/problemset/problem/1106/D", group: 5, level: 5
+            },
+            {
+                stt: 21, id: "977E", title: "Cyclic Components", rating: 1500,
+                graph: "Connected Components / DFS", ds: "vector<int> / stack<int>",
+                dsPurpose: "Tập hợp toàn bộ các đỉnh thuộc cùng một thành phần liên thông.",
+                idea: "Sử dụng DFS thu thập danh sách đỉnh của từng thành phần. Thành phần liên thông là một chu trình đơn khi và chỉ khi mọi đỉnh trong đó có bậc (degree) đúng bằng 2.",
+                link: "https://codeforces.com/problemset/problem/977/E", group: 4, level: 4
+            },
+            {
+                stt: 22, id: "1283D", title: "Christmas Trees", rating: 1500,
+                graph: "Multi-source BFS", ds: "queue<int>, unordered_map<int,int>",
+                dsPurpose: "Theo dõi các vị trí đã chiếm chỗ và lưu khoảng cách từ cây Giáng Sinh gần nhất.",
+                idea: "Khởi tạo queue với tất cả vị trí cây ban đầu trong BFS đa nguồn. Dùng unordered_map kiểm tra vị trí x trên trục 1D đã occupied chưa và cập nhật khoảng cách.",
+                link: "https://codeforces.com/problemset/problem/1283/D", group: 7, level: 5
+            },
+            {
+                stt: 23, id: "1139C", title: "Edgy Trees", rating: 1500,
+                graph: "Connected Components / DFS", ds: "vector<int>",
+                dsPurpose: "Lưu kích thước (số đỉnh) của các thành phần liên thông chỉ gồm cạnh đỏ.",
+                idea: "Chạy DFS trên đồ thị đã loại bỏ các cạnh đen để tính kích thước S_i của từng thành phần. Đáp án cần tìm là n^k - sum(S_i^k) mod (10^9+7).",
+                link: "https://codeforces.com/problemset/problem/1139/C", group: 3, level: 4
+            },
+            {
+                stt: 24, id: "1263D", title: "Secret Passwords", rating: 1500,
+                graph: "BFS / DFS", ds: "unordered_map, unordered_set",
+                dsPurpose: "Ánh xạ mối liên kết hai phía giữa các chữ cái ('a'-'z') và các từ mật khẩu.",
+                idea: "Coi 26 ký tự và n mật khẩu là các đỉnh đồ thị. Dùng DFS/BFS đếm số thành phần liên thông để xác định số nhóm mật khẩu chung ký tự.",
+                link: "https://codeforces.com/problemset/problem/1263/D", group: 7, level: 4
+            },
+            {
+                stt: 25, id: "177C2", title: "Party", rating: 1500,
+                graph: "Connected Components / DFS", ds: "set<pair<int,int>>",
+                dsPurpose: "Tra cứu nhanh các cặp đỉnh không thể đứng chung nhóm (cạnh cấm).",
+                idea: "Tìm các thành phần liên thông nhóm bạn bằng DFS. Sử dụng set kiểm tra xem có cặp ghét nhau nào nằm cùng thành phần không; nếu không thì cập nhật kích thước lớn nhất.",
+                link: "https://codeforces.com/problemset/problem/177/C2", group: 2, level: 4
+            },
+            {
+                stt: 26, id: "29C", title: "Mail Stamps", rating: 1500,
+                graph: "Path Traversal", ds: "unordered_map<int, vector<int>>",
+                dsPurpose: "Xây dựng danh sách kề cho đồ thị đường đi có nhãn đỉnh lớn (10^9).",
+                idea: "Do nhãn tem thư lên tới 10^9, dùng unordered_map làm danh sách kề. Tìm đỉnh có bậc bằng 1 làm gốc, sau đó duyệt tuyến tính xuất ra chuỗi đường đi.",
+                link: "https://codeforces.com/problemset/problem/29/C", group: 7, level: 4
+            },
+            {
+                stt: 27, id: "982C", title: "Cut 'em all!", rating: 1500,
+                graph: "Tree DFS", ds: "vector<int>",
+                dsPurpose: "Quản lý kích thước cây con hậu thứ tự trong đệ quy.",
+                idea: "DFS trả về số đỉnh của cây con gốc u. Nếu n lẻ, kết quả là -1. Nếu kích thước cây con của u là số chẵn, có thể cắt bỏ cạnh nối u với cha của nó.",
+                link: "https://codeforces.com/problemset/problem/982/C", group: 6, level: 4
+            },
+            {
+                stt: 28, id: "930A", title: "Peculiar apple-tree", rating: 1500,
+                graph: "Tree BFS/DFS Layering", ds: "map<int, int> / vector<int>",
+                dsPurpose: "Đếm tần suất xuất hiện của các quả táo theo từng mức độ sâu d.",
+                idea: "Chạy BFS/DFS tính độ sâu depth[u] của mọi đỉnh. Tại mỗi mức d, số lượng táo còn lại là count[d] mod 2. Kết quả bằng tổng số táo còn lại ở tất cả các tầng.",
+                link: "https://codeforces.com/problemset/problem/930/A", group: 3, level: 4
+            },
+            {
+                stt: 29, id: "1037D", title: "Valid BFS?", rating: 1600,
+                graph: "Tree BFS Traversal", ds: "queue<int>, unordered_map<int, int>",
+                dsPurpose: "Ánh xạ vị trí ưu tiên của từng đỉnh theo dãy đề bài cung cấp.",
+                idea: "Lưu thứ tự xuất hiện của các đỉnh trong mảng đề bài vào map. Sắp xếp lại danh sách kề của từng đỉnh dựa trên thứ tự này, sau đó chạy BFS để kiểm tra tính trùng khớp.",
+                link: "https://codeforces.com/problemset/problem/1037/D", group: 1, level: 5
+            },
+            {
+                stt: 30, id: "1611E1", title: "Escape The Maze (easy version)", rating: 1600,
+                graph: "Multi-source BFS", ds: "queue<int>, vector<int>",
+                dsPurpose: "Quản lý khoảng cách BFS đồng thời từ vị trí xuất phát của tất cả đối thủ.",
+                idea: "Chạy Multi-source BFS từ tất cả đối thủ để tính khoảng cách ngắn nhất tới mọi nút. Sau đó DFS từ gốc 1; nếu ta tới nút trước đối thủ thì đi tiếp, ngược lại bị chặn.",
+                link: "https://codeforces.com/problemset/problem/1611/E1", group: 1, level: 5
+            }
+        ];
+
+        const GROUPS_INFO = [
+            { id: 1, title: "Group 1 — BFS + Queue", icon: "layers", desc: "Quản lý thứ tự duyệt đồ thị theo chiều rộng và phân tầng khoảng cách (level-by-level processing)." },
+            { id: 2, title: "Group 2 — BFS/DFS + Set", icon: "check-square", desc: "Theo dõi tập hợp các đỉnh đã ghé thăm, khử trùng lặp không gian trạng thái trong đệ quy." },
+            { id: 3, title: "Group 3 — BFS/DFS + Map", icon: "bar-chart-2", desc: "Tích lũy, đếm tần suất hoặc tổng hợp thuộc tính đại diện thu được từ các thành phần liên thông." },
+            { id: 4, title: "Group 4 — Graph + Stack / Dynamic Containers", icon: "server", desc: "Duy trì tập hợp phần tử linh hoạt hoặc hợp nhất các thành phần liên thông theo nguyên tắc LIFO." },
+            { id: 5, title: "Group 5 — Graph + Priority Queue", icon: "arrow-up-narrow-wide", desc: "Quản lý ứng viên tiềm năng trong quá trình duyệt đồ thị tham lam (Greedy Traversal)." },
+            { id: 6, title: "Group 6 — Tree + Data Structure", icon: "git-fork", desc: "Tính toán thuộc tính cây con, phẳng hóa cấu trúc cây hoặc phục vụ truy vấn tĩnh O(1)." },
+            { id: 7, title: "Group 7 — Graph + Hash Map / Unordered Map", icon: "hash", desc: "Biểu diễn danh sách kề hoặc bảng khoảng cách cho nhãn đỉnh lớn (10^9) hoặc chuỗi." }
+        ];
+
+        const PATTERNS_INFO = [
+            {
+                num: 1, name: "BFS + Queue Phân tầng Khoảng cách (Level-by-Level BFS)",
+                when: "Tìm khoảng cách ngắn nhất trên đồ thị không trọng số, đồ thị lưới 2D, hoặc số bước biến đổi tối thiểu.",
+                ds: "std::queue<T>, std::vector<int> dist",
+                problems: ["520B", "1829E", "1365D", "1176E"]
+            },
+            {
+                num: 2, name: "Multi-source BFS + Queue cho Nguồn Lan truyền Đồng thời",
+                when: "Có nhiều điểm khởi đầu cùng lan truyền thông tin/khoảng cách đồng thời (đối thủ, tập lá cây).",
+                ds: "std::queue<T>, std::vector<int> dist, std::unordered_map",
+                problems: ["1593E", "1283D", "1611E1"]
+            },
+            {
+                num: 3, name: "DFS/BFS + Map/Set Quản lý Cạnh cấm & Thuộc tính Nhóm",
+                when: "Duyệt thành phần liên thông nhưng đảm bảo không chứa cặp đỉnh mâu thuẫn hoặc cần tính min/max nhóm.",
+                ds: "std::vector<int>, std::set<pair<int,int>>",
+                problems: ["893C", "791B", "177C2", "1139C"]
+            },
+            {
+                num: 4, name: "DFS/BFS + Unordered Map làm Danh sách kề cho Nhãn Đỉnh Lớn",
+                when: "Nhãn đỉnh vượt quá phạm vi mảng thông thường (10^9) hoặc dạng chuỗi ký tự.",
+                ds: "std::unordered_map<T, vector<T>>",
+                problems: ["29C", "1263D"]
+            },
+            {
+                num: 5, name: "DFS/BFS + Set Ghi nhớ Trạng thái Duyệt (Visited / Cycle Detection)",
+                when: "Duyệt không gian trạng thái đệ quy cần memoization hoặc phát hiện chu trình trên đồ thị hàm.",
+                ds: "std::unordered_set<T>, std::set<T>",
+                problems: ["1020B", "1829D", "1950D"]
+            },
+            {
+                num: 6, name: "Graph Traversal + Priority Queue cho Thuật toán Greedy",
+                when: "Tại mỗi bước di chuyển phải chọn đỉnh ứng viên chưa thăm có giá trị nhỏ nhất/lớn nhất.",
+                ds: "std::priority_queue<T, vector<T>, std::greater<T>>",
+                problems: ["1106D"]
+            },
+            {
+                num: 7, name: "DFS Phẳng hóa Cây (Tree Preorder Flattening) + Vector",
+                when: "Chuyển cấu trúc cây thành mảng 1D, đưa thao tác trên cây con về bài toán xử lý đoạn [L, R] trong O(1).",
+                ds: "std::vector<int> preorder, std::vector<int> pos_in_preorder",
+                problems: ["1006E", "1675D"]
+            },
+            {
+                num: 8, name: "Tree DFS Post-order + Vector/Pair Tổng hợp Cây con từ Dưới lên",
+                when: "Kết quả tại một nút phụ thuộc trực tiếp vào việc tổng hợp thông tin từ các cây con của nó.",
+                ds: "std::vector<long long>, std::pair<T, T>",
+                problems: ["1843D", "1741D", "982C"]
+            },
+            {
+                num: 9, name: "Tree Traversal + Map/Vector Gom nhóm theo Độ sâu (Depth Layering)",
+                when: "Các đỉnh trên cây tương tác hoặc có cùng tính chất phụ thuộc vào độ sâu depth[u] từ gốc.",
+                ds: "std::map<int, int>, std::vector<vector<int>>",
+                problems: ["930A", "1611D"]
+            },
+            {
+                num: 10, name: "Graph Traversal + Stack Quản lý Thành phần Liên thông Động",
+                when: "Quá trình duyệt tuần tự làm xuất hiện mối liên kết mới, đòi hỏi gộp (merge) thành phần liên thông cũ.",
+                ds: "std::stack<T>",
+                problems: ["1638C", "1057A"]
+            }
+        ];
+
+        let solvedMap = JSON.parse(localStorage.getItem('cf_graph_ds_solved') || '{}');
+        let currentModalProblemId = null;
+
+        function saveSolvedState() {
+            localStorage.setItem('cf_graph_ds_solved', JSON.stringify(solvedMap));
+            updateSolvedCount();
+        }
+
+        function toggleSolved(id) {
+            solvedMap[id] = !solvedMap[id];
+            saveSolvedState();
+            applyFilters();
+        }
+
+        function updateSolvedCount() {
+            const count = Object.values(solvedMap).filter(Boolean).length;
+            document.getElementById('solved-count').innerText = count;
+        }
+
+        function resetProgress() {
+            if (window.confirm("Bạn có chắc chắn muốn đặt lại toàn bộ tiến độ đã lưu?")) {
+                solvedMap = {};
+                saveSolvedState();
+                applyFilters();
+            }
+        }
+
+        function getRatingBadge(rating) {
+            if (rating <= 1000) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">${rating}</span>`;
+            if (rating <= 1200) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">${rating}</span>`;
+            if (rating <= 1400) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">${rating}</span>`;
+            if (rating <= 1500) return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">${rating}</span>`;
+            return `<span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">${rating}</span>`;
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('search-input').value.toLowerCase().trim();
+            const dsFilter = document.getElementById('filter-ds').value.toLowerCase();
+            const ratingFilter = document.getElementById('filter-rating').value;
+            const statusFilter = document.getElementById('filter-status').value;
+
+            const filtered = PROBLEMS.filter(p => {
+                const matchSearch = !search ||
+                    p.title.toLowerCase().includes(search) ||
+                    p.id.toLowerCase().includes(search) ||
+                    p.graph.toLowerCase().includes(search) ||
+                    p.ds.toLowerCase().includes(search) ||
+                    p.idea.toLowerCase().includes(search);
+
+                const matchDS = !dsFilter || p.ds.toLowerCase().includes(dsFilter);
+
+                let matchRating = true;
+                if (ratingFilter) {
+                    const [minR, maxR] = ratingFilter.split('-').map(Number);
+                    matchRating = p.rating >= minR && p.rating <= maxR;
+                }
+
+                let matchStatus = true;
+                const isSolved = !!solvedMap[p.id];
+                if (statusFilter === 'solved') matchStatus = isSolved;
+                if (statusFilter === 'todo') matchStatus = !isSolved;
+
+                return matchSearch && matchDS && matchRating && matchStatus;
+            });
+
+            renderProblemsTable(filtered);
+            document.getElementById('results-count').innerText = `Hiển thị ${filtered.length} / ${PROBLEMS.length} bài`;
+        }
+
+        function renderProblemsTable(problems) {
+            const tbody = document.getElementById('problems-tbody');
+            if (problems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-500">
+                            Không tìm thấy bài toán nào phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = problems.map(p => {
+                const isSolved = !!solvedMap[p.id];
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors group cursor-pointer ${isSolved ? 'bg-slate-50/70 text-slate-400' : ''}" onclick="openModal('${p.id}')">
+                        <td class="py-2.5 px-3 text-center text-xs font-mono text-slate-400">${p.stt}</td>
+                        <td class="py-2.5 px-3 text-center" onclick="event.stopPropagation()">
+                            <input type="checkbox" ${isSolved ? 'checked' : ''} onchange="toggleSolved('${p.id}')" class="w-4 h-4 rounded text-blue-600 border-slate-300 cursor-pointer">
+                        </td>
+                        <td class="py-2.5 px-4 font-bold text-slate-900 group-hover:text-blue-600 transition">
+                            <div class="flex items-center gap-2">
+                                <span>${p.title}</span>
+                                <span class="text-xs font-mono text-slate-400 font-normal">(${p.id})</span>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3">${getRatingBadge(p.rating)}</td>
+                        <td class="py-2.5 px-4 text-xs text-slate-700 font-medium">${p.graph}</td>
+                        <td class="py-2.5 px-4 text-xs font-mono text-blue-700 font-semibold">${p.ds}</td>
+                        <td class="py-2.5 px-4 text-xs text-slate-600 max-w-xs truncate" title="${p.dsPurpose}">${p.dsPurpose}</td>
+                        <td class="py-2.5 px-3 text-center" onclick="event.stopPropagation()">
+                            <a href="${p.link}" target="_blank" class="inline-flex items-center justify-center p-1 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition" title="Mở trên Codeforces">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                btn.classList.add('bg-white', 'hover:bg-slate-100', 'text-slate-700', 'border-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`tab-btn-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'hover:bg-slate-100', 'text-slate-700', 'border-slate-300');
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+            }
+
+            document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
+
+            const filterSec = document.getElementById('filter-section');
+            if (tab === 'all') {
+                filterSec.classList.remove('hidden');
+                document.getElementById('view-all').classList.remove('hidden');
+            } else {
+                filterSec.classList.add('hidden');
+                document.getElementById(`view-${tab}`).classList.remove('hidden');
+            }
+
+            if (tab === 'groups') renderGroupsView();
+            if (tab === 'path') renderPathView();
+            if (tab === 'patterns') renderPatternsView();
+        }
+
+        function renderGroupsView() {
+            const container = document.getElementById('groups-container');
+            container.innerHTML = GROUPS_INFO.map(g => {
+                const groupProblems = PROBLEMS.filter(p => p.group === g.id);
+                return `
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-3">
+                        <div class="flex items-start justify-between gap-3 border-b border-slate-200 pb-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-2 rounded bg-slate-100 border border-slate-200 text-slate-700">
+                                    <i data-lucide="${g.icon}" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-sm">${g.title}</h3>
+                                    <p class="text-xs text-slate-500 mt-0.5">${g.desc}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 border border-slate-200 text-slate-600">
+                                ${groupProblems.length} bài
+                            </span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            ${groupProblems.map(p => {
+                                const isSolved = !!solvedMap[p.id];
+                                return `
+                                    <div onclick="openModal('${p.id}')" class="p-2.5 rounded bg-slate-50 hover:bg-slate-100 border border-slate-200 transition cursor-pointer flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" ${isSolved ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleSolved('${p.id}')" class="w-4 h-4 rounded text-blue-600 border-slate-300">
+                                            <div>
+                                                <span class="text-xs font-mono font-bold text-slate-500 me-1.5">${p.id}</span>
+                                                <span class="text-xs font-semibold text-slate-800">${p.title}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            ${getRatingBadge(p.rating)}
+                                            <a href="${p.link}" target="_blank" onclick="event.stopPropagation()" class="p-1 text-slate-400 hover:text-slate-700">
+                                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderPathView() {
+            const levels = [
+                { lvl: 1, name: "Level 1 — Basic (Nền tảng 800-1000)", desc: "Tập trung biểu diễn đồ thị, dùng vector và queue cơ bản để duyệt trạng thái, lưu vết hoặc đếm chu trình đơn giản." },
+                { lvl: 2, name: "Level 2 — Easy (Không gian trạng thái 1100-1200)", desc: "Nâng cao khả năng xử lý đồ thị lưới 2D và thu thập thuộc tính tích lũy của cây con thông qua đệ quy DFS." },
+                { lvl: 3, name: "Level 3 — Medium (Thành phần liên thông 1300-1400)", desc: "Phân rã đồ thị thành các thành phần liên thông, tổng hợp thông tin đại diện nhóm và gộp trạng thái bằng stack." },
+                { lvl: 4, name: "Level 4 — Medium+ (Phẳng hóa Cây & Hash Map 1400-1500)", desc: "Phẳng hóa cây thành mảng 1D (Preorder) và ứng dụng Hash Map cho đồ thị có nhãn đỉnh bất kỳ/vô hạn." },
+                { lvl: 5, name: "Level 5 — Challenge (Greedy Traversal & Multi-source 1500-1600+)", desc: "Duyệt đồ thị tham lam bằng Min-Priority Queue, định hướng danh sách kề và Multi-source BFS trên không gian vô hạn." }
+            ];
+
+            const container = document.getElementById('path-container');
+            container.innerHTML = levels.map(l => {
+                const lvlProblems = PROBLEMS.filter(p => p.level === l.lvl);
+                const solvedLvl = lvlProblems.filter(p => !!solvedMap[p.id]).length;
+                const percent = Math.round((solvedLvl / lvlProblems.length) * 100);
+
+                return `
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
+                            <div>
+                                <span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
+                                    Cấp độ ${l.lvl}
+                                </span>
+                                <h3 class="text-base font-bold text-slate-900 mt-1">${l.name}</h3>
+                                <p class="text-xs text-slate-500">${l.desc}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-28 bg-slate-100 h-2 rounded overflow-hidden border border-slate-200">
+                                    <div class="bg-blue-600 h-full transition-all duration-300" style="width: ${percent}%"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-600 font-mono">${solvedLvl}/${lvlProblems.length}</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            ${lvlProblems.map(p => {
+                                const isSolved = !!solvedMap[p.id];
+                                return `
+                                    <div onclick="openModal('${p.id}')" class="p-2.5 rounded bg-slate-50 hover:bg-slate-100 border border-slate-200 transition cursor-pointer flex flex-col justify-between gap-2">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" ${isSolved ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleSolved('${p.id}')" class="w-4 h-4 rounded text-blue-600 border-slate-300">
+                                                <span class="text-xs font-mono font-bold text-blue-700">${p.id}</span>
+                                            </div>
+                                            ${getRatingBadge(p.rating)}
+                                        </div>
+                                        <h4 class="text-xs font-semibold text-slate-800 line-clamp-1">${p.title}</h4>
+                                        <div class="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-200">
+                                            <span class="font-mono text-slate-600 truncate max-w-[140px] text-[11px]">${p.ds}</span>
+                                            <a href="${p.link}" target="_blank" onclick="event.stopPropagation()" class="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-[11px]">
+                                                CF <i data-lucide="external-link" class="w-3 h-3"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderPatternsView() {
+            const container = document.getElementById('patterns-container');
+            container.innerHTML = PATTERNS_INFO.map(pt => {
+                return `
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-3">
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-6 h-6 rounded bg-slate-100 text-slate-800 border border-slate-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                #${pt.num}
+                            </span>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-xs sm:text-sm">${pt.name}</h3>
+                                <p class="text-xs text-blue-700 font-mono font-semibold mt-0.5">${pt.ds}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs text-slate-700">
+                            <span class="text-slate-500 font-semibold block mb-0.5">Khi nào nên dùng:</span>
+                            ${pt.when}
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 block mb-1">Ví dụ minh họa:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${pt.problems.map(cfid => {
+                                    const p = PROBLEMS.find(item => item.id === cfid);
+                                    if (!p) return '';
+                                    return `
+                                        <a href="${p.link}" target="_blank" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-medium text-slate-800 transition flex items-center gap-1">
+                                            <span>${p.id}</span>
+                                            <span class="text-[10px] text-slate-500">(${p.rating})</span>
+                                            <i data-lucide="external-link" class="w-3 h-3 text-slate-400"></i>
+                                        </a>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openModal(id) {
+            const p = PROBLEMS.find(item => item.id === id);
+            if (!p) return;
+            currentModalProblemId = id;
+
+            document.getElementById('modal-title').innerText = p.title;
+            document.getElementById('modal-cfid').innerText = `Codeforces ID: ${p.id}`;
+            document.getElementById('modal-rating-badge').innerHTML = getRatingBadge(p.rating);
+            document.getElementById('modal-graph').innerText = p.graph;
+            document.getElementById('modal-ds').innerText = p.ds;
+            document.getElementById('modal-purpose').innerText = p.dsPurpose;
+            document.getElementById('modal-idea').innerText = p.idea;
+            document.getElementById('modal-link').href = p.link;
+            document.getElementById('modal-checkbox').checked = !!solvedMap[id];
+
+            document.getElementById('problem-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('problem-modal').classList.add('hidden');
+            currentModalProblemId = null;
+        }
+
+        function toggleSolvedFromModal() {
+            if (currentModalProblemId) {
+                toggleSolved(currentModalProblemId);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSolvedCount();
+            applyFilters();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
